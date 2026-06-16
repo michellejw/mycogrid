@@ -6,13 +6,30 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D440846A2FE195B50016444C /* ShroomKit in Frameworks */ = {isa = PBXBuildFile; productRef = D44084692FE195B50016444C /* ShroomKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D454E6262FE0FB0200048F33 /* rootline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rootline.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D4B35A3B2FE1A0CB00922C03 /* Exceptions for "rootline" folder in "rootline" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D454E6252FE0FB0200048F33 /* rootline */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D454E6282FE0FB0200048F33 /* rootline */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D4B35A3B2FE1A0CB00922C03 /* Exceptions for "rootline" folder in "rootline" target */,
+			);
 			path = rootline;
 			sourceTree = "<group>";
 		};
@@ -23,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D440846A2FE195B50016444C /* ShroomKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +83,7 @@
 			);
 			name = rootline;
 			packageProductDependencies = (
+				D44084692FE195B50016444C /* ShroomKit */,
 			);
 			productName = rootline;
 			productReference = D454E6262FE0FB0200048F33 /* rootline.app */;
@@ -94,6 +113,9 @@
 			);
 			mainGroup = D454E61D2FE0FB0200048F33;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D44084682FE195B50016444C /* XCLocalSwiftPackageReference "../../../../games/shroomkit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D454E6272FE0FB0200048F33 /* Products */;
 			projectDirPath = "";
@@ -256,9 +278,9 @@
 				DEVELOPMENT_TEAM = 3Q2XX7Y7LW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rootline/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -288,9 +310,9 @@
 				DEVELOPMENT_TEAM = 3Q2XX7Y7LW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = rootline/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -332,6 +354,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		D44084682FE195B50016444C /* XCLocalSwiftPackageReference "../../../../games/shroomkit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../../games/shroomkit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D44084692FE195B50016444C /* ShroomKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ShroomKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D454E61E2FE0FB0200048F33 /* Project object */;
 }

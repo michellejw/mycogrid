@@ -1,0 +1,79 @@
+import SwiftUI
+import ShroomKit
+
+struct WinCard: View {
+    let board: Board
+    let onNext: () -> Void
+    let onMenu: () -> Void
+
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 12) {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(palette.tierSelBg)
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(palette.accent)
+                    )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Network connected!")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(palette.text)
+                    Text(subtitle)
+                        .font(.system(size: 13, design: .rounded))
+                        .foregroundStyle(palette.sub)
+                }
+                Spacer(minLength: 0)
+            }
+            HStack(spacing: 10) {
+                Button(action: onMenu) {
+                    Text("Menu")
+                        .font(.system(.body, design: .rounded).weight(.semibold))
+                        .foregroundStyle(palette.text)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(palette.tierBg)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .strokeBorder(palette.tierBorder, lineWidth: 1)
+                                )
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                Button(action: onNext) {
+                    Text("Next puzzle")
+                        .font(.system(.body, design: .rounded).weight(.semibold))
+                        .foregroundStyle(palette.accentText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(palette.accent)
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(palette.pill)
+        )
+    }
+
+    private var subtitle: String {
+        let tierLabel = board.tier?.label ?? "Lesson"
+        let size = "\(board.puzzle.cols)×\(board.puzzle.rows)"
+        let time = board.elapsedSeconds.asTimerString
+        return "\(tierLabel) · \(size) · cleared in \(time)"
+    }
+}
