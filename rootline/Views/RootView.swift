@@ -9,6 +9,9 @@ enum Screen {
     case howToPlay
     case play
     case tutorial
+#if DEBUG
+    case puzzleEditor
+#endif
 }
 
 @MainActor
@@ -16,14 +19,25 @@ enum Screen {
 final class AppState {
     var screen: Screen = .launching
     let settings: Settings = Settings()
+    let progressStore: ProgressStore = ProgressStore()
 
     var activeBoard: Board?
     var tutorial: TutorialFlow?
 
     private var currentPuzzleIndex: Int = 0
 
-    /// Called once when the launch loader finishes its first beat.
+    /// Called once when the launch loader finishes its first beat. If a
+    /// previous session was in progress, jump straight into it.
     func finishLaunch() {
+        if let saved = progressStore.load(),
+           let board = Board(restoring: saved),
+           !board.isSolved {
+            activeBoard = board
+            currentPuzzleIndex = saved.groveNumber - 1
+            settings.tier = saved.tier
+            screen = .play
+            return
+        }
         if !settings.hasSeenTutorial {
             screen = .welcome
         } else {
@@ -41,11 +55,13 @@ final class AppState {
         currentPuzzleIndex = 0
         let puzzles = PuzzleData.puzzles(for: tier)
         let puzzle = puzzles[currentPuzzleIndex]
-        activeBoard = Board(
+        let board = Board(
             puzzle: puzzle,
             tier: tier,
             groveNumber: currentPuzzleIndex + 1
         )
+        activeBoard = board
+        saveProgress()
         screen = .play
     }
 
@@ -53,11 +69,25 @@ final class AppState {
         guard let tier = activeBoard?.tier else { return }
         let puzzles = PuzzleData.puzzles(for: tier)
         currentPuzzleIndex = (currentPuzzleIndex + 1) % puzzles.count
-        activeBoard = Board(
+        let board = Board(
             puzzle: puzzles[currentPuzzleIndex],
             tier: tier,
             groveNumber: currentPuzzleIndex + 1
         )
+        activeBoard = board
+        saveProgress()
+    }
+
+    /// Snapshot the active board to disk. Cheap; called on every tap and on
+    /// scenePhase changes.
+    func saveProgress() {
+        guard let board = activeBoard, !board.isSolved,
+              let snapshot = board.snapshot() else { return }
+        progressStore.save(snapshot)
+    }
+
+    func clearSavedProgress() {
+        progressStore.clear()
     }
 
     func goHome() {
@@ -76,6 +106,12 @@ final class AppState {
         tutorial = TutorialFlow()
         screen = .tutorial
     }
+
+#if DEBUG
+    func openPuzzleEditor() {
+        screen = .puzzleEditor
+    }
+#endif
 
     func finishTutorial() {
         settings.hasSeenTutorial = true
@@ -105,7 +141,13 @@ struct RootView: View {
                     showSettings = false
                     appState.startTutorial()
                 },
-                onClose: { showSettings = false }
+                onClose: { showSettings = false },
+                onPuzzleEditor: {
+#if DEBUG
+                    showSettings = false
+                    appState.openPuzzleEditor()
+#endif
+                }
             )
             .environment(\.palette, palette)
             .presentationDetents([.medium, .large])
@@ -166,7 +208,12 @@ struct RootView: View {
                     settings: appState.settings,
                     onBack: { appState.openDifficulty() },
                     onNext: { appState.nextPuzzle() },
-                    onMenu: { appState.goHome() }
+                    onMenu: {
+                        appState.clearSavedProgress()
+                        appState.goHome()
+                    },
+                    onSave: { appState.saveProgress() },
+                    onClearProgress: { appState.clearSavedProgress() }
                 )
                 .transition(.opacity)
             }
@@ -180,6 +227,11 @@ struct RootView: View {
                 )
                 .transition(.opacity)
             }
+#if DEBUG
+        case .puzzleEditor:
+            PuzzleEditorView(onClose: { appState.goHome() })
+                .transition(.opacity)
+#endif
         }
     }
 }

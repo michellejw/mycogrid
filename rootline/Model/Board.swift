@@ -37,6 +37,45 @@ final class Board {
         self.xEdges = []
     }
 
+    /// Build a board from a saved snapshot. Falls back to grove 0 if the saved
+    /// grove number no longer exists in the tier's puzzle list (puzzles may
+    /// have been re-ordered between launches).
+    convenience init?(restoring progress: PuzzleProgress) {
+        let puzzles = PuzzleData.puzzles(for: progress.tier)
+        guard !puzzles.isEmpty else { return nil }
+        let index = max(0, min(progress.groveNumber - 1, puzzles.count - 1))
+        self.init(
+            puzzle: puzzles[index],
+            tier: progress.tier,
+            groveNumber: index + 1,
+            allowHints: true
+        )
+        self.activeEdges = Set(progress.activeEdges)
+        self.xEdges = Set(progress.xEdges)
+        self.mode = progress.mode
+        self.elapsedSeconds = progress.elapsedSeconds
+        self.hintsUsed = progress.hintsUsed
+        // Re-run win detection in case the restored state already satisfies.
+        if model.isSolved(active: activeEdges) {
+            isSolved = true
+        }
+    }
+
+    /// A serializable snapshot of the current play session, or `nil` if this is
+    /// a tutorial board (no tier).
+    func snapshot() -> PuzzleProgress? {
+        guard let tier else { return nil }
+        return PuzzleProgress(
+            tier: tier,
+            groveNumber: groveNumber,
+            activeEdges: Array(activeEdges),
+            xEdges: Array(xEdges),
+            mode: mode,
+            elapsedSeconds: elapsedSeconds,
+            hintsUsed: hintsUsed
+        )
+    }
+
     var totalHints: Int { 3 }
     var hintsRemaining: Int { max(0, totalHints - hintsUsed) }
 

@@ -5,17 +5,19 @@ struct SettingsSheet: View {
     @Bindable var settings: Settings
     let onTutorial: () -> Void
     let onClose: () -> Void
+    var onPuzzleEditor: (() -> Void)? = nil
 
     @Environment(\.palette) private var palette
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                Text("Settings")
-                    .font(.system(.title2, design: .rounded).weight(.semibold))
-                    .foregroundStyle(palette.text)
-                Spacer()
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    Text("Settings")
+                        .font(.system(.title2, design: .rounded).weight(.semibold))
+                        .foregroundStyle(palette.text)
+                    Spacer()
+                }
             section(title: "Theme") {
                 HStack(spacing: 8) {
                     ForEach(ThemeMode.allCases, id: \.self) { mode in
@@ -77,7 +79,32 @@ struct SettingsSheet: View {
                 }
                 .buttonStyle(.plain)
             }
-            Spacer(minLength: 0)
+#if DEBUG
+            section(title: "Debug") {
+                Button(action: { onPuzzleEditor?() }) {
+                    HStack {
+                        Image(systemName: "square.grid.3x3.square")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(palette.accent)
+                        Text("Puzzle editor")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(palette.text)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(palette.sub)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(palette.tierBg)
+                    )
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+#endif
             HStack {
                 Spacer()
                 Text("Part of Shroom Games")
@@ -85,11 +112,13 @@ struct SettingsSheet: View {
                     .foregroundStyle(palette.sub)
                 Spacer()
             }
+            .padding(.top, 14)
+            }
+            .padding(.horizontal, 22)
+            .padding(.top, 18)
+            .padding(.bottom, 30)
         }
-        .padding(.horizontal, 22)
-        .padding(.top, 18)
-        .padding(.bottom, 30)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .scrollIndicators(.hidden)
         .background(palette.appBg.ignoresSafeArea())
     }
 

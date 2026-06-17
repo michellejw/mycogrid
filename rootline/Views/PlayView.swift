@@ -7,8 +7,11 @@ struct PlayView: View {
     let onBack: () -> Void
     let onNext: () -> Void
     let onMenu: () -> Void
+    let onSave: () -> Void
+    let onClearProgress: () -> Void
 
     @Environment(\.palette) private var palette
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         VStack(spacing: 0) {
@@ -48,6 +51,13 @@ struct PlayView: View {
                 try? await Task.sleep(for: .seconds(1))
                 if Task.isCancelled { return }
                 board.tick()
+            }
+        }
+        .onChange(of: board.tapTick) { _, _ in onSave() }
+        .onChange(of: board.solveTick) { _, _ in onClearProgress() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background || phase == .inactive {
+                onSave()
             }
         }
     }
