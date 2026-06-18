@@ -41,18 +41,6 @@ struct BoardView: View {
     @ViewBuilder
     private func board(layout: BoardLayout) -> some View {
         ZStack {
-            // Highlight region (hint level 1).
-            if let cell = board.highlightCell {
-                let origin = layout.dot(c: cell.c, r: cell.r)
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(palette.accent.opacity(0.13))
-                    .frame(width: layout.cell - 4, height: layout.cell - 4)
-                    .position(
-                        x: origin.x + layout.cell / 2,
-                        y: origin.y + layout.cell / 2
-                    )
-            }
-
             // Ghost slots — dotted lines for every un-touched edge.
             Canvas { ctx, _ in
                 drawGhosts(ctx: ctx, layout: layout)

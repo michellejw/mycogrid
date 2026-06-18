@@ -15,6 +15,8 @@ struct PlayView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var fastestYet: Bool = false
+    @State private var confirmingReveal: Bool = false
+    @State private var confirmingLeave: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,7 +28,7 @@ struct PlayView: View {
             BoardView(board: board, look: settings.look)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 8)
-            if !board.isSolved {
+            if !board.isSolved && !board.revealed {
                 modeToggle
                     .padding(.top, 14)
                     .padding(.bottom, 8)
@@ -44,9 +46,30 @@ struct PlayView: View {
                     .padding(.horizontal, 18)
                     .padding(.bottom, 18)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if board.revealed {
+                RevealedCard(board: board, onNext: onNext, onMenu: onMenu)
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 18)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.85), value: board.isSolved)
+        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: board.revealed)
+        .alert("Show solution?", isPresented: $confirmingReveal) {
+            Button("Cancel", role: .cancel) { }
+            Button("Show") {
+                board.revealSolution()
+                onClearProgress()
+            }
+        } message: {
+            Text("Reveal the full path for this puzzle. This clear won't be counted toward your stats.")
+        }
+        .alert("Leave puzzle?", isPresented: $confirmingLeave) {
+            Button("Cancel", role: .cancel) { }
+            Button("Leave", role: .destructive) { onBack() }
+        } message: {
+            Text("Your progress on this puzzle will be lost.")
+        }
         .sensoryFeedback(.impact(weight: .light, intensity: 0.6), trigger: board.tapTick)
         .sensoryFeedback(.success, trigger: board.solveTick)
         .task(id: ObjectIdentifier(board)) {
@@ -79,7 +102,7 @@ struct PlayView: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 0) {
-            Button(action: onBack) {
+            Button(action: { tappedBack() }) {
                 Image(systemName: "chevron.left")
                     .font(.system(.body, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.sub)
@@ -91,6 +114,20 @@ struct PlayView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .padding(.trailing, 6)
+            Button(action: { confirmingReveal = true }) {
+                Image(systemName: "eye")
+                    .font(.system(.body, design: .rounded).weight(.semibold))
+                    .foregroundStyle(revealEnabled ? palette.sub : palette.sub.opacity(0.35))
+                    .frame(minWidth: 44, minHeight: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(palette.pill)
+                    )
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!revealEnabled)
             Spacer()
             VStack(spacing: 1) {
                 Text((board.tier?.label ?? "Lesson").uppercased())
@@ -118,9 +155,7 @@ struct PlayView: View {
             Button(action: { board.nextHint() }) {
                 Image(systemName: "questionmark")
                     .font(.system(.body, design: .rounded).weight(.semibold))
-                    .foregroundStyle(board.allowHints && board.hintsRemaining > 0
-                                     ? palette.sub
-                                     : palette.sub.opacity(0.35))
+                    .foregroundStyle(hintEnabled ? palette.sub : palette.sub.opacity(0.35))
                     .frame(minWidth: 44, minHeight: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -129,8 +164,28 @@ struct PlayView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .disabled(!board.allowHints || board.hintsRemaining == 0 || board.isSolved)
+            .disabled(!hintEnabled)
         }
+    }
+
+    private func tappedBack() {
+        if board.hasPlayerMoves && !board.isSolved && !board.revealed {
+            confirmingLeave = true
+        } else {
+            onBack()
+        }
+    }
+
+    private var hintEnabled: Bool {
+        board.allowHints && !board.isSolved && !board.revealed
+    }
+
+    private var revealEnabled: Bool {
+        board.allowHints && !board.isSolved && !board.revealed
+    }
+
+    private var hintsUsedLabel: String {
+        board.hintsUsed == 1 ? "1 hint used" : "\(board.hintsUsed) hints used"
     }
 
     // MARK: Stats
@@ -141,18 +196,11 @@ struct PlayView: View {
             if settings.showTimer {
                 statPill(systemName: "clock", text: board.elapsedSeconds.asTimerString)
             }
-            if board.allowHints {
+            if board.allowHints && board.hintsUsed > 0 {
                 hintsPill
-            }
-            if let msg = board.hintMessage {
-                Text(msg)
-                    .font(.system(.caption, design: .rounded).weight(.medium))
-                    .foregroundStyle(palette.sub)
-                    .transition(.opacity)
             }
             Spacer()
         }
-        .animation(.easeInOut(duration: 0.2), value: board.hintMessage)
     }
 
     private func statPill(systemName: String, text: String) -> some View {
@@ -180,7 +228,7 @@ struct PlayView: View {
                     .fill(palette.accent)
                     .frame(width: 8, height: 8)
             }
-            Text("\(board.hintsRemaining) hints")
+            Text(hintsUsedLabel)
                 .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(palette.text)
                 .monospacedDigit()

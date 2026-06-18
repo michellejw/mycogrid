@@ -20,11 +20,11 @@ final class Board {
     var mode: DrawMode = .draw
     var elapsedSeconds: Int = 0
     var hintsUsed: Int = 0
-    var hintLevel: Int = 0
-    var highlightCell: Cell? = nil
-    var hintMessage: String? = nil
 
     var isSolved: Bool = false
+    /// True after the player has tapped "Show solution". Stats are not
+    /// recorded for revealed boards.
+    var revealed: Bool = false
     var solveTick: Int = 0
     var tapTick: Int = 0
 
@@ -76,10 +76,13 @@ final class Board {
         )
     }
 
-    var totalHints: Int { 3 }
-    var hintsRemaining: Int { max(0, totalHints - hintsUsed) }
-
     var puzzle: Puzzle { model.puzzle }
+
+    /// True when the player has done anything beyond the puzzle's preset state.
+    /// Used to decide whether leaving the puzzle warrants a confirmation.
+    var hasPlayerMoves: Bool {
+        activeEdges != puzzle.presetActive || !xEdges.isEmpty || hintsUsed > 0
+    }
 
     func tick() {
         guard !isSolved else { return }
@@ -87,8 +90,7 @@ final class Board {
     }
 
     func toggle(_ edge: Edge) {
-        guard !isSolved else { return }
-        clearHint()
+        guard !isSolved, !revealed else { return }
         tapTick &+= 1
         switch mode {
         case .draw:
@@ -114,36 +116,22 @@ final class Board {
 
     // MARK: Hints
 
-    /// Tap the hint button: highlight → name → place an edge. Resets when the
-    /// player makes another move (via `clearHint`).
+    /// One tap = one move: place a correct edge or remove a wrongly-placed one.
+    /// Unlimited — `hintsUsed` is tracked for the player's awareness, not gated.
     func nextHint() {
-        guard allowHints, hintsRemaining > 0 else { return }
-        hintLevel += 1
-        switch hintLevel {
-        case 1:
-            if let cell = unsatisfiedCell() {
-                highlightCell = cell
-                hintMessage = nil
-            } else {
-                hintLevel = 3
-                placeOneMissingEdge()
-                hintsUsed += 1
-            }
-        case 2:
-            hintMessage = "This area needs another move."
-        default:
-            placeOneMissingEdge()
-            hintsUsed += 1
-            hintLevel = 0
-            highlightCell = nil
-            hintMessage = nil
-        }
+        guard allowHints, !isSolved, !revealed else { return }
+        placeOneMissingEdge()
+        hintsUsed += 1
     }
 
-    private func clearHint() {
-        highlightCell = nil
-        hintMessage = nil
-        hintLevel = 0
+    /// Reveal the full solution view-only: fills in every correct edge but
+    /// does not set `isSolved` or fire `solveTick`, so no win card appears and
+    /// no stats are recorded.
+    func revealSolution() {
+        guard !isSolved, !revealed else { return }
+        activeEdges = model.solution
+        xEdges = []
+        revealed = true
     }
 
     /// First clue cell whose current count doesn't match its target.
@@ -175,9 +163,9 @@ final class Board {
     /// Add one edge that's in the solution but missing from the player's loop,
     /// or remove one that's wrongly present.
     private func placeOneMissingEdge() {
-        // Prefer adding a missing solution edge near an unsatisfied highlighted cell.
+        // Prefer making a move on an unsatisfied clue cell so the help is local.
         let p = model.puzzle
-        if let cell = highlightCell ?? unsatisfiedCell() {
+        if let cell = unsatisfiedCell() {
             // Try the cell's own edges first.
             let cellEdges = Edge.cellEdges(c: cell.c, r: cell.r)
             for e in cellEdges where model.solution.contains(e) && !activeEdges.contains(e) {
@@ -221,7 +209,7 @@ final class Board {
         mode = .draw
         elapsedSeconds = 0
         hintsUsed = 0
-        clearHint()
         isSolved = false
+        revealed = false
     }
 }
