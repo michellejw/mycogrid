@@ -54,4 +54,22 @@ final class Settings {
         self.hasSeenTutorial = d.bool(forKey: Keys.tutorialSeen)
         self.themeMode = ThemeMode(rawValue: d.string(forKey: Keys.themeMode) ?? "") ?? .system
     }
+
+    /// Cycle System → Light → Dark → System. Used by the in-game quick-toggle.
+    func cycleThemeMode() {
+        switch themeMode {
+        case .system:   themeMode = .forest
+        case .forest:   themeMode = .twilight
+        case .twilight: themeMode = .system
+        }
+    }
+}
+
+/// SF Symbol name matching the current theme mode for quick-toggle buttons.
+func themeIconName(for mode: ThemeMode) -> String {
+    switch mode {
+    case .system:   return "circle.lefthalf.filled"
+    case .forest:   return "sun.max.fill"
+    case .twilight: return "moon.fill"
+    }
 }

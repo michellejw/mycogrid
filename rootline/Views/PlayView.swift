@@ -4,6 +4,7 @@ import ShroomKit
 struct PlayView: View {
     @Bindable var board: Board
     let settings: Settings
+    @Bindable var scoreStore: ScoreStore
     let onBack: () -> Void
     let onNext: () -> Void
     let onMenu: () -> Void
@@ -12,6 +13,13 @@ struct PlayView: View {
 
     @Environment(\.palette) private var palette
     @Environment(\.scenePhase) private var scenePhase
+
+    @State private var initials: String = ""
+    @State private var showingWinEntry: Bool = false
+    @State private var isNewRecord: Bool = false
+    /// Suppress the WinCard while an entry sheet is pending or visible so the
+    /// player doesn't see Menu/Next flash briefly before the sheet rises.
+    @State private var awaitingEntry: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,7 +44,7 @@ struct PlayView: View {
         .padding(.bottom, 4)
         .background(palette.appBg.ignoresSafeArea())
         .overlay(alignment: .bottom) {
-            if board.isSolved {
+            if board.isSolved && !awaitingEntry {
                 WinCard(board: board, onNext: onNext, onMenu: onMenu)
                     .padding(.horizontal, 18)
                     .padding(.bottom, 18)
@@ -44,6 +52,7 @@ struct PlayView: View {
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.85), value: board.isSolved)
+        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: awaitingEntry)
         .sensoryFeedback(.impact(weight: .light, intensity: 0.6), trigger: board.tapTick)
         .sensoryFeedback(.success, trigger: board.solveTick)
         .task(id: ObjectIdentifier(board)) {
@@ -54,10 +63,53 @@ struct PlayView: View {
             }
         }
         .onChange(of: board.tapTick) { _, _ in onSave() }
-        .onChange(of: board.solveTick) { _, _ in onClearProgress() }
+        .onChange(of: board.solveTick) { _, _ in
+            // Guard: when the board is swapped (Next puzzle), solveTick can
+            // change from a non-zero value to 0. Only react to real solves.
+            guard board.isSolved else { return }
+            onClearProgress()
+            if let tier = board.tier,
+               scoreStore.qualifies(seconds: board.elapsedSeconds, for: tier) {
+                isNewRecord = scoreStore.isNewRecord(seconds: board.elapsedSeconds, for: tier)
+                initials = ""
+                awaitingEntry = true
+                Task {
+                    try? await Task.sleep(for: .milliseconds(900))
+                    showingWinEntry = true
+                }
+            }
+        }
+        .onChange(of: showingWinEntry) { _, isShowing in
+            // Releases the WinCard once the entry sheet has been dismissed by
+            // any path (Save, Skip, swipe-down).
+            if !isShowing { awaitingEntry = false }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background || phase == .inactive {
                 onSave()
+            }
+        }
+        .sheet(isPresented: $showingWinEntry) {
+            if let tier = board.tier {
+                WinEntrySheet(
+                    timeText: board.elapsedSeconds.asTimerString,
+                    tierLabel: tier.label,
+                    groveNumber: board.groveNumber,
+                    isRecord: isNewRecord,
+                    initials: $initials,
+                    onSave: {
+                        scoreStore.save(
+                            initials: initials,
+                            seconds: board.elapsedSeconds,
+                            tier: tier,
+                            groveNumber: board.groveNumber
+                        )
+                        showingWinEntry = false
+                    },
+                    onSkip: { showingWinEntry = false }
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
             }
         }
     }
@@ -68,9 +120,9 @@ struct PlayView: View {
         HStack(alignment: .center, spacing: 0) {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(.body, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.sub)
-                    .frame(width: 38, height: 38)
+                    .frame(minWidth: 44, minHeight: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(palette.pill)
@@ -81,21 +133,34 @@ struct PlayView: View {
             Spacer()
             VStack(spacing: 1) {
                 Text((board.tier?.label ?? "Lesson").uppercased())
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .font(.system(.caption2, design: .rounded).weight(.semibold))
                     .tracking(1.3)
                     .foregroundStyle(palette.sub)
                 Text("Grove #\(board.groveNumber)")
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .font(.system(.title3, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.text)
             }
             Spacer()
+            Button(action: { settings.cycleThemeMode() }) {
+                Image(systemName: themeIconName(for: settings.themeMode))
+                    .font(.system(.body, design: .rounded).weight(.semibold))
+                    .foregroundStyle(palette.sub)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(palette.pill)
+                    )
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 6)
             Button(action: { board.nextHint() }) {
                 Image(systemName: "questionmark")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(.body, design: .rounded).weight(.semibold))
                     .foregroundStyle(board.allowHints && board.hintsRemaining > 0
                                      ? palette.sub
                                      : palette.sub.opacity(0.35))
-                    .frame(width: 38, height: 38)
+                    .frame(minWidth: 44, minHeight: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(palette.pill)
@@ -120,7 +185,7 @@ struct PlayView: View {
             }
             if let msg = board.hintMessage {
                 Text(msg)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(.system(.caption, design: .rounded).weight(.medium))
                     .foregroundStyle(palette.sub)
                     .transition(.opacity)
             }
@@ -132,10 +197,10 @@ struct PlayView: View {
     private func statPill(systemName: String, text: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: systemName)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(.caption, design: .rounded).weight(.semibold))
                 .foregroundStyle(palette.sub)
             Text(text)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(palette.text)
                 .monospacedDigit()
         }
@@ -155,7 +220,7 @@ struct PlayView: View {
                     .frame(width: 8, height: 8)
             }
             Text("\(board.hintsRemaining) hints")
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(palette.text)
                 .monospacedDigit()
         }
@@ -178,7 +243,7 @@ struct PlayView: View {
             segment(title: "Mark dead",
                     icon: { AnyView(
                         Text("✕")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .font(.system(.footnote, design: .rounded).weight(.semibold))
                     ) },
                     isActive: board.mode == .mark,
                     action: { board.mode = .mark })
@@ -201,10 +266,11 @@ struct PlayView: View {
             HStack(spacing: 7) {
                 icon()
                 Text(title)
-                    .font(.system(size: 13.5, weight: .semibold, design: .rounded))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
+            .frame(minHeight: 44)
+            .padding(.vertical, 4)
             .foregroundStyle(isActive ? palette.accentText : palette.sub)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)

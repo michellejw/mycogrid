@@ -16,15 +16,15 @@ struct WinCard: View {
                     .frame(width: 44, height: 44)
                     .overlay(
                         Image(systemName: "checkmark")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(.title3, design: .rounded).weight(.bold))
                             .foregroundStyle(palette.accent)
                     )
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Network connected!")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(.callout, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.text)
                     Text(subtitle)
-                        .font(.system(size: 13, design: .rounded))
+                        .font(.system(.footnote, design: .rounded))
                         .foregroundStyle(palette.sub)
                 }
                 Spacer(minLength: 0)
@@ -35,7 +35,8 @@ struct WinCard: View {
                         .font(.system(.body, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.text)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
+                        .frame(minHeight: 44)
+                        .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(palette.tierBg)
@@ -52,7 +53,8 @@ struct WinCard: View {
                         .font(.system(.body, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.accentText)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
+                        .frame(minHeight: 44)
+                        .padding(.vertical, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(palette.accent)

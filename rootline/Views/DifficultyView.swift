@@ -29,9 +29,9 @@ struct DifficultyView: View {
         HStack(spacing: 12) {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(.body, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.sub)
-                    .frame(width: 38, height: 38)
+                    .frame(minWidth: 44, minHeight: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(palette.pill)
@@ -40,7 +40,7 @@ struct DifficultyView: View {
             }
             .buttonStyle(.plain)
             Text("Difficulty")
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .font(.system(.title2, design: .rounded).weight(.semibold))
                 .foregroundStyle(palette.text)
             Spacer()
         }
@@ -52,10 +52,10 @@ struct DifficultyView: View {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(tier.label)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(.callout, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.text)
                     Text(tier.meta)
-                        .font(.system(size: 13, design: .rounded))
+                        .font(.system(.footnote, design: .rounded))
                         .foregroundStyle(palette.sub)
                 }
                 Spacer()

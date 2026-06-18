@@ -6,9 +6,9 @@ enum Screen {
     case welcome
     case home
     case difficulty
-    case howToPlay
     case play
     case tutorial
+    case bestTimes
 #if DEBUG
     case puzzleEditor
 #endif
@@ -20,6 +20,7 @@ final class AppState {
     var screen: Screen = .launching
     let settings: Settings = Settings()
     let progressStore: ProgressStore = ProgressStore()
+    let scoreStore: ScoreStore = ScoreStore()
 
     var activeBoard: Board?
     var tutorial: TutorialFlow?
@@ -98,8 +99,8 @@ final class AppState {
         screen = .difficulty
     }
 
-    func openHowToPlay() {
-        screen = .howToPlay
+    func openBestTimes() {
+        screen = .bestTimes
     }
 
     func startTutorial() {
@@ -184,7 +185,8 @@ struct RootView: View {
                 tier: appState.settings.tier,
                 onPickDifficulty: { appState.openDifficulty() },
                 onPlay: { appState.startGame(tier: appState.settings.tier) },
-                onHowToPlay: { appState.openHowToPlay() },
+                onBestTimes: { appState.openBestTimes() },
+                onHowToPlay: { appState.startTutorial() },
                 onSettings: { showSettings = true }
             )
             .transition(.opacity)
@@ -195,17 +197,12 @@ struct RootView: View {
                 onPick: { tier in appState.startGame(tier: tier) }
             )
             .transition(.opacity)
-        case .howToPlay:
-            HowToPlayView(
-                onBack: { appState.goHome() },
-                onStartTutorial: { appState.startTutorial() }
-            )
-            .transition(.opacity)
         case .play:
             if let board = appState.activeBoard {
                 PlayView(
                     board: board,
                     settings: appState.settings,
+                    scoreStore: appState.scoreStore,
                     onBack: { appState.openDifficulty() },
                     onNext: { appState.nextPuzzle() },
                     onMenu: {
@@ -227,6 +224,12 @@ struct RootView: View {
                 )
                 .transition(.opacity)
             }
+        case .bestTimes:
+            BestTimesView(
+                scoreStore: appState.scoreStore,
+                onClose: { appState.goHome() }
+            )
+            .transition(.opacity)
 #if DEBUG
         case .puzzleEditor:
             PuzzleEditorView(onClose: { appState.goHome() })

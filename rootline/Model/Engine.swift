@@ -90,6 +90,37 @@ struct PuzzleModel: Sendable {
         return n
     }
 
+    /// True when the active edges form a single closed loop (every touched dot
+    /// has degree 2 and the edges form one connected component), regardless of
+    /// whether the clues are satisfied. Used by the tutorial to detect the
+    /// "drew a valid loop but the wrong one" case.
+    func isClosedLoop(active: Set<Edge>) -> Bool {
+        guard !active.isEmpty else { return false }
+        var degree: [Dot: Int] = [:]
+        var byDot: [Dot: [Edge]] = [:]
+        for e in active {
+            let (a, b) = e.endpoints
+            degree[a, default: 0] += 1
+            degree[b, default: 0] += 1
+            byDot[a, default: []].append(e)
+            byDot[b, default: []].append(e)
+        }
+        for (_, d) in degree where d != 2 { return false }
+        guard let start = active.first else { return false }
+        var seen: Set<Edge> = [start]
+        var stack: [Edge] = [start]
+        while let e = stack.popLast() {
+            let (a, b) = e.endpoints
+            for d in [a, b] {
+                for ne in byDot[d] ?? [] where !seen.contains(ne) {
+                    seen.insert(ne)
+                    stack.append(ne)
+                }
+            }
+        }
+        return seen.count == active.count
+    }
+
     /// Win: every shown clue is satisfied AND the active edges form one closed loop.
     func isSolved(active: Set<Edge>) -> Bool {
         // Shown clues all satisfied.

@@ -112,11 +112,6 @@ struct WinEntrySheet: View {
         .scrollDismissesKeyboard(.interactively)
         .scrollIndicators(.hidden)
         .background(palette.appBg.ignoresSafeArea())
-        .onAppear {
-            Task {
-                try? await Task.sleep(for: .milliseconds(250))
-                initialsFocused = true
-            }
-        }
+        .onAppear { initialsFocused = true }
     }
 }

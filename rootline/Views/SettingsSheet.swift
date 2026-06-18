@@ -27,7 +27,7 @@ struct SettingsSheet: View {
                     }
                 }
                 Text("System follows your phone's Light/Dark setting.")
-                    .font(.system(size: 13, design: .rounded))
+                    .font(.system(.footnote, design: .rounded))
                     .foregroundStyle(palette.sub)
                     .padding(.top, 2)
             }
@@ -43,14 +43,14 @@ struct SettingsSheet: View {
                 Text(settings.look == .glow
                      ? "Luminous thread with a soft halo."
                      : "Flat, high-contrast thread — no glow.")
-                    .font(.system(size: 13, design: .rounded))
+                    .font(.system(.footnote, design: .rounded))
                     .foregroundStyle(palette.sub)
                     .padding(.top, 2)
             }
             section(title: "Timer") {
                 Toggle(isOn: $settings.showTimer) {
                     Text("Show on play screen")
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .font(.system(.subheadline, design: .rounded).weight(.medium))
                         .foregroundStyle(palette.text)
                 }
                 .tint(palette.accent)
@@ -59,18 +59,19 @@ struct SettingsSheet: View {
                 Button(action: { onTutorial() }) {
                     HStack {
                         Image(systemName: "graduationcap")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(palette.accent)
                         Text("Replay tutorial lessons")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(palette.text)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
                             .foregroundStyle(palette.sub)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
+                    .frame(minHeight: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .fill(palette.tierBg)
@@ -84,18 +85,19 @@ struct SettingsSheet: View {
                 Button(action: { onPuzzleEditor?() }) {
                     HStack {
                         Image(systemName: "square.grid.3x3.square")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(palette.accent)
                         Text("Puzzle editor")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(palette.text)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
                             .foregroundStyle(palette.sub)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
+                    .frame(minHeight: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .fill(palette.tierBg)
@@ -108,7 +110,7 @@ struct SettingsSheet: View {
             HStack {
                 Spacer()
                 Text("Part of Shroom Games")
-                    .font(.system(size: 12, design: .rounded))
+                    .font(.system(.caption, design: .rounded))
                     .foregroundStyle(palette.sub)
                 Spacer()
             }
@@ -141,7 +143,7 @@ struct SettingsSheet: View {
     private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(.caption2, design: .rounded).weight(.semibold))
                 .tracking(1.3)
                 .foregroundStyle(palette.sub)
             content()
@@ -151,10 +153,11 @@ struct SettingsSheet: View {
     private func chip(label: String, isActive: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(isActive ? palette.accentText : palette.text)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
+                .frame(minHeight: 44)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(isActive ? palette.accent : palette.pill)

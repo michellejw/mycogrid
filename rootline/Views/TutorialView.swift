@@ -49,6 +49,11 @@ struct TutorialView: View {
                 .padding(.bottom, 6)
             BoardView(board: flow.board, look: settings.look)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if !flow.board.isSolved {
+                modeToggle
+                    .padding(.top, 14)
+                    .transition(.opacity)
+            }
             unlockStrip
                 .padding(.top, 16)
         }
@@ -88,11 +93,11 @@ struct TutorialView: View {
     private var topBar: some View {
         HStack {
             Button(action: onSkip) {
-                Text("Skip")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                Text("Skip all")
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.sub)
                     .padding(.horizontal, 14)
-                    .frame(height: 38)
+                    .frame(minHeight: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .fill(palette.pill)
@@ -101,6 +106,27 @@ struct TutorialView: View {
             }
             .buttonStyle(.plain)
             Spacer()
+            Button(action: skipLesson) {
+                HStack(spacing: 4) {
+                    Text(flow.isLast ? "Finish" : "Skip lesson")
+                        .font(.system(.footnote, design: .rounded).weight(.medium))
+                    Image(systemName: "chevron.right")
+                        .font(.system(.footnote, design: .rounded).weight(.semibold))
+                }
+                .foregroundStyle(palette.sub)
+                .padding(.horizontal, 12)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func skipLesson() {
+        if flow.isLast {
+            onFinish()
+        } else {
+            flow.next()
         }
     }
 
@@ -110,10 +136,10 @@ struct TutorialView: View {
         HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(flow.lesson.title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.text)
                 Text(flow.lesson.instruction)
-                    .font(.system(size: 13, design: .rounded))
+                    .font(.system(.footnote, design: .rounded))
                     .foregroundStyle(palette.sub)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -134,10 +160,10 @@ struct TutorialView: View {
         let isError = errorMessage != nil
         return HStack(alignment: .top, spacing: 10) {
             Image(systemName: isError ? "exclamationmark.circle.fill" : "lightbulb.fill")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(.footnote, design: .rounded).weight(.semibold))
                 .foregroundStyle(isError ? palette.warn : palette.accent)
             Text(msg ?? " ")
-                .font(.system(size: 13, design: .rounded))
+                .font(.system(.footnote, design: .rounded))
                 .foregroundStyle(palette.text)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -146,7 +172,7 @@ struct TutorialView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: coachingHeight)
+        .frame(minHeight: coachingHeight)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(msg == nil ? Color.clear : palette.tierSelBg)
@@ -156,11 +182,62 @@ struct TutorialView: View {
         .animation(.easeInOut(duration: 0.2), value: stuckHint)
     }
 
+    // MARK: Draw / Mark mode toggle (mirrors PlayView)
+
+    private var modeToggle: some View {
+        HStack(spacing: 6) {
+            segment(title: "Draw thread",
+                    icon: { AnyView(threadGlyph) },
+                    isActive: flow.board.mode == .draw,
+                    action: { flow.board.mode = .draw })
+            segment(title: "Mark dead",
+                    icon: { AnyView(
+                        Text("✕")
+                            .font(.system(.footnote, design: .rounded).weight(.semibold))
+                    ) },
+                    isActive: flow.board.mode == .mark,
+                    action: { flow.board.mode = .mark })
+        }
+        .padding(5)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(palette.pill)
+        )
+    }
+
+    private var threadGlyph: some View {
+        Capsule()
+            .fill(Color.primary)
+            .frame(width: 13, height: 3)
+    }
+
+    private func segment(title: String, icon: () -> AnyView, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 7) {
+                icon()
+                Text(title)
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
+            .padding(.vertical, 4)
+            .foregroundStyle(isActive ? palette.accentText : palette.sub)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isActive ? palette.accent : Color.clear)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.15), value: isActive)
+    }
+
     // MARK: Over-fill detection
 
     private func evaluateClues() {
         let model = flow.board.model
         let p = model.puzzle
+        var hasUnderFilled = false
         for r in 0..<p.rows {
             for c in 0..<p.cols {
                 let cell = Cell(c: c, r: r)
@@ -178,7 +255,16 @@ struct TutorialView: View {
                     }
                     return
                 }
+                if count < target { hasUnderFilled = true }
             }
+        }
+        // No over-fills. If the loop closes but a visible clue still wants more
+        // thread, the player drew a *different* loop from the intended one and
+        // probably thinks they're done. Nudge them at the unsatisfied clue.
+        if hasUnderFilled, !flow.board.isSolved,
+           model.isClosedLoop(active: flow.board.activeEdges) {
+            errorMessage = "Your loop closes, but a clue still wants more thread. Look for the number that isn't green."
+            return
         }
         errorMessage = nil
     }
@@ -191,10 +277,10 @@ struct TutorialView: View {
             VStack(spacing: 12) {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(.footnote, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.accent)
                     Text("Unlocked: \"\(flow.lesson.unlock)\"")
-                        .font(.system(size: 13.5, design: .rounded))
+                        .font(.system(.footnote, design: .rounded))
                         .foregroundStyle(palette.text)
                         .multilineTextAlignment(.leading)
                     Spacer(minLength: 0)

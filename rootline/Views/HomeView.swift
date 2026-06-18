@@ -5,6 +5,7 @@ struct HomeView: View {
     let tier: Tier
     let onPickDifficulty: () -> Void
     let onPlay: () -> Void
+    let onBestTimes: () -> Void
     let onHowToPlay: () -> Void
     let onSettings: () -> Void
 
@@ -16,9 +17,9 @@ struct HomeView: View {
                 Spacer()
                 Button(action: onSettings) {
                     Image(systemName: "gearshape")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(.body, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.sub)
-                        .frame(width: 44, height: 44)
+                        .frame(minWidth: 44, minHeight: 44)
                         .background(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .fill(palette.pill)
@@ -46,7 +47,10 @@ struct HomeView: View {
             VStack(spacing: 11) {
                 difficultyCard
                 primaryButton("Play", action: onPlay)
-                secondaryButton("How to play", action: onHowToPlay)
+                HStack(spacing: 6) {
+                    textButton(icon: "trophy.fill", title: "Best times", action: onBestTimes)
+                    textButton(icon: "questionmark.circle", title: "How to play", action: onHowToPlay)
+                }
             }
             Spacer(minLength: 24)
         }
@@ -61,19 +65,19 @@ struct HomeView: View {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("DIFFICULTY")
-                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .font(.system(.caption2, design: .rounded).weight(.semibold))
                         .tracking(1.3)
                         .foregroundStyle(palette.sub)
                     Text(tier.label)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .font(.system(.title3, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.text)
                     Text(tier.meta)
-                        .font(.system(size: 12.5, design: .rounded))
+                        .font(.system(.footnote, design: .rounded))
                         .foregroundStyle(palette.sub)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(.footnote, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.sub)
             }
             .padding(.horizontal, 18)
@@ -103,18 +107,19 @@ struct HomeView: View {
         .buttonStyle(.plain)
     }
 
-    private func secondaryButton(_ title: String, action: @escaping () -> Void) -> some View {
+    private func textButton(icon: String, title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title)
-                .font(.system(.body, design: .rounded).weight(.semibold))
-                .foregroundStyle(palette.text)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(palette.pill)
-                )
-                .contentShape(Rectangle())
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                Text(title)
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+            }
+            .foregroundStyle(palette.sub)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
+            .padding(.horizontal, 10)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
