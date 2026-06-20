@@ -292,19 +292,8 @@ struct TutorialView: View {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(palette.tierSelBg)
                 )
-                Button(action: advance) {
-                    Text(flow.isLast ? "Start playing" : "Next lesson")
-                        .font(.system(.body, design: .rounded).weight(.semibold))
-                        .foregroundStyle(palette.accentText)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(palette.accent)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                Button(flow.isLast ? "Start playing" : "Next lesson", action: advance)
+                    .buttonStyle(.shroomPrimary)
             }
             .transition(.opacity)
         }

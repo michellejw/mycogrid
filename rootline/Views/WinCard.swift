@@ -37,38 +37,10 @@ struct WinCard: View {
                 Spacer(minLength: 0)
             }
             HStack(spacing: 10) {
-                Button(action: onMenu) {
-                    Text("Menu")
-                        .font(.system(.body, design: .rounded).weight(.semibold))
-                        .foregroundStyle(palette.text)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 44)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(palette.tierBg)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .strokeBorder(palette.tierBorder, lineWidth: 1)
-                                )
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                Button(action: onNext) {
-                    Text("Next puzzle")
-                        .font(.system(.body, design: .rounded).weight(.semibold))
-                        .foregroundStyle(palette.accentText)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 44)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(palette.accent)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                Button("Menu", action: onMenu)
+                    .buttonStyle(.shroomOutline)
+                Button("Next puzzle", action: onNext)
+                    .buttonStyle(.shroomPrimary)
             }
         }
         .padding(.horizontal, 16)

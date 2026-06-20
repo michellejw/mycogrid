@@ -35,7 +35,8 @@ struct HomeView: View {
             Spacer(minLength: 0)
             VStack(spacing: 11) {
                 difficultyCard
-                primaryButton("Play", action: onPlay)
+                Button("Play", action: onPlay)
+                    .buttonStyle(.shroomPrimary(prominent: true))
                 HStack(spacing: 6) {
                     textButton(icon: "chart.bar.fill", title: "Stats", action: onStats)
                     textButton(icon: "questionmark.circle", title: "How to play", action: onHowToPlay)
@@ -77,21 +78,6 @@ struct HomeView: View {
         .buttonStyle(.plain)
     }
 
-    private func primaryButton(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(.title3, design: .rounded).weight(.semibold))
-                .foregroundStyle(palette.accentText)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 17)
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(palette.accent)
-                )
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
 
     private func textButton(icon: String, title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
