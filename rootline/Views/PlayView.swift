@@ -178,51 +178,18 @@ struct PlayView: View {
     // MARK: Mode toggle
 
     private var modeToggle: some View {
-        HStack(spacing: 6) {
-            segment(title: "Draw thread",
-                    icon: { AnyView(threadGlyph) },
-                    isActive: board.mode == .draw,
-                    action: { board.mode = .draw })
-            segment(title: "Mark dead",
-                    icon: { AnyView(
-                        Text("✕")
-                            .font(.system(.footnote, design: .rounded).weight(.semibold))
-                    ) },
-                    isActive: board.mode == .mark,
-                    action: { board.mode = .mark })
-        }
-        .padding(5)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(palette.pill)
-        )
+        SegmentedToggle(selection: $board.mode, segments: [
+            .init(.draw, title: "Draw thread") { threadGlyph },
+            .init(.mark, title: "Mark dead") {
+                Text("✕").font(.system(.footnote, design: .rounded).weight(.semibold))
+            },
+        ])
     }
 
     private var threadGlyph: some View {
         Capsule()
             .fill(Color.primary)
             .frame(width: 13, height: 3)
-    }
-
-    private func segment(title: String, icon: () -> AnyView, isActive: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 7) {
-                icon()
-                Text(title)
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-            }
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: 44)
-            .padding(.vertical, 4)
-            .foregroundStyle(isActive ? palette.accentText : palette.sub)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isActive ? palette.accent : Color.clear)
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .animation(.easeInOut(duration: 0.15), value: isActive)
     }
 }
 
