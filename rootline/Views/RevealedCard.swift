@@ -11,39 +11,21 @@ struct RevealedCard: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 12) {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(palette.pill)
-                    .frame(width: 44, height: 44)
-                    .overlay(
-                        Image(systemName: "eye.fill")
-                            .font(.system(.title3, design: .rounded).weight(.bold))
-                            .foregroundStyle(palette.sub)
-                    )
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Solution shown")
-                        .font(.system(.callout, design: .rounded).weight(.semibold))
-                        .foregroundStyle(palette.text)
-                    Text(subtitle)
-                        .font(.system(.footnote, design: .rounded))
-                        .foregroundStyle(palette.sub)
-                }
-                Spacer(minLength: 0)
-            }
-            HStack(spacing: 10) {
-                Button("Menu", action: onMenu)
-                    .buttonStyle(.shroomOutline)
-                Button("Next puzzle", action: onNext)
-                    .buttonStyle(.shroomPrimary)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+        ResultCard(
+            title: "Solution shown",
+            subtitle: subtitle,
+            primaryLabel: "Next puzzle", onPrimary: onNext,
+            secondaryLabel: "Menu", onSecondary: onMenu
+        ) {
+            RoundedRectangle(cornerRadius: Radius.md, style: .continuous)
                 .fill(palette.pill)
-        )
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Image(systemName: "eye.fill")
+                        .font(.system(.title3, design: .rounded).weight(.bold))
+                        .foregroundStyle(palette.sub)
+                )
+        }
     }
 
     private var subtitle: String {

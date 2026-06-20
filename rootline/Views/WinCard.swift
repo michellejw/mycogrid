@@ -11,44 +11,22 @@ struct WinCard: View {
     @Environment(\.palette) private var palette
 
     var body: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 12) {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(palette.tierSelBg)
-                    .frame(width: 44, height: 44)
-                    .overlay(
-                        Image(systemName: "checkmark")
-                            .font(.system(.title3, design: .rounded).weight(.bold))
-                            .foregroundStyle(palette.accent)
-                    )
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Network connected!")
-                        .font(.system(.callout, design: .rounded).weight(.semibold))
-                        .foregroundStyle(palette.text)
-                    Text(subtitle)
-                        .font(.system(.footnote, design: .rounded))
-                        .foregroundStyle(palette.sub)
-                    if fastestYet {
-                        Text("Your fastest yet")
-                            .font(.system(.caption, design: .rounded).weight(.medium))
-                            .foregroundStyle(palette.accent)
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-            HStack(spacing: 10) {
-                Button("Menu", action: onMenu)
-                    .buttonStyle(.shroomOutline)
-                Button("Next puzzle", action: onNext)
-                    .buttonStyle(.shroomPrimary)
-            }
+        ResultCard(
+            title: "Network connected!",
+            subtitle: subtitle,
+            note: fastestYet ? "Your fastest yet" : nil,
+            primaryLabel: "Next puzzle", onPrimary: onNext,
+            secondaryLabel: "Menu", onSecondary: onMenu
+        ) {
+            RoundedRectangle(cornerRadius: Radius.md, style: .continuous)
+                .fill(palette.tierSelBg)
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Image(systemName: "checkmark")
+                        .font(.system(.title3, design: .rounded).weight(.bold))
+                        .foregroundStyle(palette.accent)
+                )
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(palette.pill)
-        )
     }
 
     /// Always shows the completion time — a clock, not competition. The
