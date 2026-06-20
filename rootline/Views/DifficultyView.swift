@@ -26,13 +26,7 @@ struct DifficultyView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 12) {
-            PillIconButton(systemName: "chevron.left", accessibilityLabel: "Back", action: onBack)
-            Text("Difficulty")
-                .font(.system(.title2, design: .rounded).weight(.semibold))
-                .foregroundStyle(palette.text)
-            Spacer()
-        }
+        ScreenHeader("Difficulty", onBack: onBack)
     }
 
     private func tierRow(_ tier: Tier) -> some View {

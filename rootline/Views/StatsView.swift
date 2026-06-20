@@ -42,12 +42,7 @@ struct StatsView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 12) {
-            PillIconButton(systemName: "chevron.left", accessibilityLabel: "Back", action: onClose)
-            Text("Stats")
-                .font(.system(.title2, design: .rounded).weight(.semibold))
-                .foregroundStyle(palette.text)
-            Spacer()
+        ScreenHeader("Stats", onBack: onClose) {
             if scoreStore.hasAnyStats {
                 Button { confirmingClear = true } label: {
                     Text("Clear")
