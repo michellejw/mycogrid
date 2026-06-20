@@ -194,7 +194,13 @@ when guessing is required.
 ## Open questions / risks
 
 - **Symlink portability** — fine on this macOS dev setup; revisit only if CI runs elsewhere.
-- **Possible non-unique existing puzzles** — the `pool` audit may reveal that some
-  hand-curated puzzles (especially with hidden clues) are *not* unique. That is a feature
-  of this work, not a bug in the solver; surfacing them is the point. How to handle any
-  failures (fix vs. accept) is a follow-up, not part of this sub-project.
+- **Possible non-unique existing puzzles** — RESOLVED for the current pool: the `pool`
+  audit found exactly one — **Mycelium #1** had two valid loops once its clues were
+  hidden — and it was fixed by revealing one clue (cell `(1,0)`), now uniquely solvable
+  with zero guesses. The audit is a permanent regression guard against this recurring.
+- **Performance cliff on under-clued grids (deferred to the generator sub-project)** —
+  `solve()` is fast on well-clued puzzles but can hang on sparse inputs (a 7×10 grid with
+  one clue does not finish quickly). Not an issue for this sub-project's only live input
+  (the curated pool). Before the generator feeds under-clued candidates to `solve()`, it
+  must add subloop pruning and/or a guess/time budget. Documented as a `KNOWN LIMIT`
+  comment in `Solver.swift`.
