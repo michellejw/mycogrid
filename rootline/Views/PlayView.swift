@@ -130,10 +130,7 @@ struct PlayView: View {
             .disabled(!revealEnabled)
             Spacer()
             VStack(spacing: 1) {
-                Text((board.tier?.label ?? "Lesson").uppercased())
-                    .font(.system(.caption2, design: .rounded).weight(.semibold))
-                    .tracking(1.3)
-                    .foregroundStyle(palette.sub)
+                EyebrowLabel(board.tier?.label ?? "Lesson")
                 Text("Grove #\(board.groveNumber)")
                     .font(.system(.title3, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.text)

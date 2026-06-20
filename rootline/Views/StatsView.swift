@@ -77,10 +77,7 @@ struct StatsView: View {
         let stat = scoreStore.stat(for: tier)
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
-                Text(tier.label.uppercased())
-                    .font(.system(.caption2, design: .rounded).weight(.semibold))
-                    .tracking(1.3)
-                    .foregroundStyle(palette.sub)
+                EyebrowLabel(tier.label)
                 Spacer()
                 Text(tier.shortMeta)
                     .font(.system(.caption2, design: .rounded))

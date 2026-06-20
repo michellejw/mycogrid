@@ -142,10 +142,7 @@ struct SettingsSheet: View {
     @ViewBuilder
     private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased())
-                .font(.system(.caption2, design: .rounded).weight(.semibold))
-                .tracking(1.3)
-                .foregroundStyle(palette.sub)
+            EyebrowLabel(title)
             content()
         }
     }

@@ -64,10 +64,7 @@ struct HomeView: View {
         Button(action: onPickDifficulty) {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("DIFFICULTY")
-                        .font(.system(.caption2, design: .rounded).weight(.semibold))
-                        .tracking(1.3)
-                        .foregroundStyle(palette.sub)
+                    EyebrowLabel("Difficulty")
                     Text(tier.label)
                         .font(.system(.title3, design: .rounded).weight(.semibold))
                         .foregroundStyle(palette.text)
