@@ -45,3 +45,38 @@ func isSimplyConnected(_ inside: Set<Cell>, cols: Int, rows: Int) -> Bool {
     let reachedInBounds = sea.filter { $0.c >= 0 && $0.c < cols && $0.r >= 0 && $0.r < rows }.count
     return reachedInBounds == cols * rows - inside.count
 }
+
+/// Grows a random connected region by cell accretion. Result is connected and
+/// sized within ~40–60% of the grid, but may contain a hole; callers validate
+/// with `isSimplyConnected` and retry.
+struct RegionGenerator {
+    let cols: Int
+    let rows: Int
+
+    func generate(using rng: inout some RandomNumberGenerator) -> Set<Cell> {
+        let total = cols * rows
+        let frac = Double.random(in: 0.4...0.6, using: &rng)
+        let target = max(1, min(total - 1, Int((Double(total) * frac).rounded())))
+
+        let seed = Cell(c: Int.random(in: 0..<cols, using: &rng),
+                        r: Int.random(in: 0..<rows, using: &rng))
+        var inside: Set<Cell> = [seed]
+        var frontier: Set<Cell> = Set(inBoundsNeighbors(seed))
+
+        while inside.count < target && !frontier.isEmpty {
+            // Sort frontier to an array before randomElement — Set order is not stable.
+            let ordered = frontier.sorted { ($0.r, $0.c) < ($1.r, $1.c) }
+            let pick = ordered.randomElement(using: &rng)!
+            inside.insert(pick)
+            frontier.remove(pick)
+            for n in inBoundsNeighbors(pick) where !inside.contains(n) {
+                frontier.insert(n)
+            }
+        }
+        return inside
+    }
+
+    private func inBoundsNeighbors(_ cell: Cell) -> [Cell] {
+        fourNeighbors(cell).filter { $0.c >= 0 && $0.c < cols && $0.r >= 0 && $0.r < rows }
+    }
+}
