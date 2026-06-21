@@ -1,5 +1,3 @@
-import Foundation
-
 /// Reproducible PRNG (SplitMix64). Unlike `SystemRandomNumberGenerator`,
 /// the same seed always yields the same sequence — required for byte-identical
 /// generated bundles.
