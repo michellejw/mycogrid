@@ -157,26 +157,17 @@ struct TutorialView: View {
 
     private var coachingSlot: some View {
         let msg = errorMessage ?? stuckHint
-        let isError = errorMessage != nil
-        return HStack(alignment: .top, spacing: 10) {
-            Image(systemName: isError ? "exclamationmark.circle.fill" : "lightbulb.fill")
-                .font(.system(.footnote, design: .rounded).weight(.semibold))
-                .foregroundStyle(isError ? palette.warn : palette.accent)
-            Text(msg ?? " ")
-                .font(.system(.footnote, design: .rounded))
-                .foregroundStyle(palette.text)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
+        let tone: NudgeTone = errorMessage != nil ? .warning : .guidance
+        return Group {
+            if let msg {
+                NudgeToast(msg, tone: tone)
+                    .lineLimit(2)
+            } else {
+                Color.clear
+            }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(minHeight: coachingHeight)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(msg == nil ? Color.clear : palette.tierSelBg)
-        )
         .opacity(msg == nil ? 0 : 1)
         .animation(.easeInOut(duration: 0.2), value: errorMessage)
         .animation(.easeInOut(duration: 0.2), value: stuckHint)
