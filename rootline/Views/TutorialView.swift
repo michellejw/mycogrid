@@ -133,24 +133,7 @@ struct TutorialView: View {
     // MARK: Instruction pill
 
     private var instructionPill: some View {
-        HStack(alignment: .top, spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(flow.lesson.title)
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundStyle(palette.text)
-                Text(flow.lesson.instruction)
-                    .font(.system(.footnote, design: .rounded))
-                    .foregroundStyle(palette.sub)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(palette.pill)
-        )
+        TutorialBannerCard(title: flow.lesson.title, message: flow.lesson.instruction)
     }
 
     // MARK: Coaching slot (fixed height, opacity-toggled so layout never jumps)
