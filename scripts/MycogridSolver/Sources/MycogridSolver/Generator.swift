@@ -78,3 +78,43 @@ func generateBundle(
     }
     return out
 }
+
+// MARK: - Public CLI entry
+
+public struct GenerateOptions {
+    public var tierNames: [String]?   // nil = all tiers
+    public var count: Int
+    public var seed: UInt64
+    public init(tierNames: [String]?, count: Int, seed: UInt64) {
+        self.tierNames = tierNames
+        self.count = count
+        self.seed = seed
+    }
+}
+
+public enum GenerateError: Error, Equatable {
+    case unknownTier(String)
+}
+
+/// Resolves tier names, runs the driver, and returns the encoded JSON bundle.
+public func generateBundleData(
+    _ options: GenerateOptions,
+    progress: (String) -> Void = { _ in }
+) throws -> Data {
+    let tiers: [Tier]
+    if let names = options.tierNames {
+        tiers = try names.map { name in
+            guard let t = Tier(rawValue: name) else { throw GenerateError.unknownTier(name) }
+            return t
+        }
+    } else {
+        tiers = Tier.allCases
+    }
+    let bundle = generateBundle(
+        tiers: tiers,
+        countPerTier: options.count,
+        seed: options.seed,
+        progress: progress
+    )
+    return try encodeBundle(bundle, seed: options.seed)
+}

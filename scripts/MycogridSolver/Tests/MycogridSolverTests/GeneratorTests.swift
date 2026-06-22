@@ -41,3 +41,19 @@ final class GeneratorTests: XCTestCase {
         XCTAssertEqual(ka, kb)
     }
 }
+
+extension GeneratorTests {
+    func test_generateBundleData_unknownTier_throws() {
+        let opts = GenerateOptions(tierNames: ["bogus"], count: 1, seed: 1)
+        XCTAssertThrowsError(try generateBundleData(opts)) { error in
+            XCTAssertEqual(error as? GenerateError, .unknownTier("bogus"))
+        }
+    }
+
+    func test_generateBundleData_isDeterministic() throws {
+        let opts = GenerateOptions(tierNames: ["sprout"], count: 2, seed: 11)
+        let a = try generateBundleData(opts)
+        let b = try generateBundleData(opts)
+        XCTAssertEqual(a, b)
+    }
+}
