@@ -21,10 +21,18 @@ final class ClueHiderTests: XCTestCase {
         return solve(PuzzleClues(cols: model.puzzle.cols, rows: model.puzzle.rows, clues: visible))
     }
 
+    func test_sproutModel_isFullyCluedPureLogicUnique() {
+        let model = sproutModel()
+        let result = solveVisible(model, hidden: [])
+        XCTAssertEqual(result.verdict, .unique)
+        XCTAssertEqual(result.trace.guesses, 0)
+    }
+
     func test_hide_keepsPureLogicUniqueness() {
         let model = sproutModel()
         var rng = SplitMix64(seed: 5)
         let hidden = ClueHider(model: model).hide(using: &rng)
+        XCTAssertFalse(hidden.isEmpty, "expected the hider to hide at least one clue")
         let result = solveVisible(model, hidden: hidden)
         XCTAssertEqual(result.verdict, .unique)
         XCTAssertEqual(result.trace.guesses, 0)
