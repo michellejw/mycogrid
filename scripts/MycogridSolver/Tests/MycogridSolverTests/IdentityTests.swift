@@ -32,4 +32,10 @@ final class IdentityTests: XCTestCase {
         XCTAssertEqual(id.count, 12)
         XCTAssertTrue(id.allSatisfy { $0.isHexDigit })
     }
+
+    func test_id_matchesKnownPinnedValue() {
+        // Pins the FNV-1a output so a future change to a non-stable hash (e.g. stdlib Hasher) is caught.
+        let region = cells([[0,0],[1,0],[1,1]])
+        XCTAssertEqual(puzzleID(cols: 2, rows: 2, inside: region), "d2d48afc66a4")
+    }
 }
