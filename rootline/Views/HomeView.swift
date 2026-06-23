@@ -2,9 +2,9 @@ import SwiftUI
 import ShroomKit
 
 struct HomeView: View {
-    let tier: Tier
-    let onPickDifficulty: () -> Void
-    let onPlay: () -> Void
+    let today: AppState.TodayContext?
+    let onPlayToday: () -> Void
+    let onArchive: () -> Void
     let onStats: () -> Void
     let onHowToPlay: () -> Void
     let onSettings: () -> Void
@@ -23,7 +23,7 @@ struct HomeView: View {
                     .fill(palette.pill)
                     .frame(width: 92, height: 92)
                     .overlay(MyceliumIcon().padding(16))
-                Text("Rootline")
+                Text("Mycogrid")
                     .font(.system(.largeTitle, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.text)
                 Text("A cozy loop puzzle for mushroom foragers.")
@@ -34,10 +34,12 @@ struct HomeView: View {
             }
             Spacer(minLength: 0)
             VStack(spacing: 11) {
-                difficultyCard
-                Button("Play", action: onPlay)
+                todayCard
+                Button(today?.cleared == true ? "Play again" : "Play today", action: onPlayToday)
                     .buttonStyle(.shroomPrimary(prominent: true))
+                    .disabled(today == nil)
                 HStack(spacing: 6) {
+                    textButton(icon: "calendar", title: "Archive", action: onArchive)
                     textButton(icon: "chart.bar.fill", title: "Stats", action: onStats)
                     textButton(icon: "questionmark.circle", title: "How to play", action: onHowToPlay)
                 }
@@ -50,34 +52,34 @@ struct HomeView: View {
         .background(palette.appBg.ignoresSafeArea())
     }
 
-    private var difficultyCard: some View {
-        Button(action: onPickDifficulty) {
-            HStack(spacing: 10) {
-                VStack(alignment: .leading, spacing: 3) {
-                    EyebrowLabel("Difficulty")
-                    Text(tier.label)
-                        .font(.system(.title3, design: .rounded).weight(.semibold))
-                        .foregroundStyle(palette.text)
-                    Text(tier.meta)
+    private var todayCard: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            EyebrowLabel("Today's grove")
+            if let today {
+                Text(today.date.formatted(.dateTime.weekday(.wide).month().day()))
+                    .font(.system(.title3, design: .rounded).weight(.semibold))
+                    .foregroundStyle(palette.text)
+                HStack(spacing: 8) {
+                    Text(today.tier.label)
                         .font(.system(.footnote, design: .rounded))
                         .foregroundStyle(palette.sub)
+                    if today.cleared {
+                        Text("· Cleared\(today.bestSeconds.map { " · \($0.asTimerString)" } ?? "")")
+                            .font(.system(.footnote, design: .rounded).weight(.semibold))
+                            .foregroundStyle(palette.accent)
+                    }
                 }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(.footnote, design: .rounded).weight(.semibold))
-                    .foregroundStyle(palette.sub)
+            } else {
+                Text("Couldn't load today's puzzle")
+                    .font(.system(.title3, design: .rounded).weight(.semibold))
+                    .foregroundStyle(palette.text)
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 15)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(palette.pill)
-            )
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 15)
+        .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(palette.pill))
     }
-
 
     private func textButton(icon: String, title: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -90,7 +92,7 @@ struct HomeView: View {
             .foregroundStyle(palette.sub)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 44)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 6)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

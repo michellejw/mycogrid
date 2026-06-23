@@ -21,11 +21,58 @@ final class AppState {
     let settings: Settings = Settings()
     let progressStore: ProgressStore = ProgressStore()
     let scoreStore: ScoreStore = ScoreStore()
+    let daily: DailyService? = DailyService.live()
+    let completions: CompletionStore = CompletionStore()
 
     var activeBoard: Board?
     var tutorial: TutorialFlow?
 
+    /// The calendar date of the board currently in play (today, or an archived day).
+    private(set) var playingDate: Date = Date()
+    private(set) var playingPuzzleID: String?
+
     private var currentPuzzleIndex: Int = 0
+
+    struct TodayContext {
+        let date: Date
+        let tier: Tier
+        let cleared: Bool
+        let bestSeconds: Int?
+    }
+
+    func todayContext() -> TodayContext? {
+        guard let daily, let dp = daily.puzzle(for: Date()) else { return nil }
+        return TodayContext(
+            date: Date(),
+            tier: dp.tier,
+            cleared: completions.isCleared(dp),
+            bestSeconds: completions.bestSeconds(for: dp.tier)
+        )
+    }
+
+    /// Start today's daily puzzle.
+    func startToday() { playDaily(date: Date()) }
+
+    /// Start the puzzle for a specific calendar date (from the archive).
+    func startArchived(date: Date) { playDaily(date: date) }
+
+    private func playDaily(date: Date) {
+        guard let daily, let dp = daily.puzzle(for: date) else { return }
+        playingDate = date
+        playingPuzzleID = dp.id
+        activeBoard = Board(puzzle: dp.puzzle, tier: dp.tier, groveNumber: 0)
+        saveProgress()
+        screen = .play
+    }
+
+    /// Record a clear of the in-play puzzle. Returns true on a new per-tier best.
+    @discardableResult
+    func recordClear(seconds: Int) -> Bool {
+        guard let id = playingPuzzleID, let tier = activeBoard?.tier else { return false }
+        return completions.record(id: id, tier: tier, seconds: seconds)
+    }
+
+    func openArchive() { /* wired in Task 8 */ }
 
     /// Called once when the launch loader finishes its first beat. If a
     /// previous session was in progress, jump straight into it.
@@ -182,9 +229,9 @@ struct RootView: View {
             .transition(.opacity)
         case .home:
             HomeView(
-                tier: appState.settings.tier,
-                onPickDifficulty: { appState.openDifficulty() },
-                onPlay: { appState.startGame(tier: appState.settings.tier) },
+                today: appState.todayContext(),
+                onPlayToday: { appState.startToday() },
+                onArchive: { appState.openArchive() },
                 onStats: { appState.openStats() },
                 onHowToPlay: { appState.startTutorial() },
                 onSettings: { showSettings = true }
