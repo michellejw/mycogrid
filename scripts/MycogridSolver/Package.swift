@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "MycogridSolver",
+    platforms: [.macOS(.v14)],
     targets: [
         .target(name: "MycogridSolver"),
         .executableTarget(name: "mycogrid-validate", dependencies: ["MycogridSolver"]),
