@@ -4,10 +4,11 @@ import ShroomKit
 struct PlayView: View {
     @Bindable var board: Board
     let settings: Settings
-    @Bindable var scoreStore: ScoreStore
-    let onBack: () -> Void
-    let onNext: () -> Void
+    let playedDate: Date
+    let onRecordClear: (Int) -> Bool
+    let onArchive: () -> Void
     let onMenu: () -> Void
+    let onBack: () -> Void
     let onSave: () -> Void
     let onClearProgress: () -> Void
 
@@ -42,12 +43,12 @@ struct PlayView: View {
         .background(palette.appBg.ignoresSafeArea())
         .overlay(alignment: .bottom) {
             if board.isSolved {
-                WinCard(board: board, fastestYet: fastestYet, onNext: onNext, onMenu: onMenu)
+                WinCard(board: board, fastestYet: fastestYet, onMenu: onMenu, onArchive: onArchive)
                     .padding(.horizontal, 18)
                     .padding(.bottom, 18)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             } else if board.revealed {
-                RevealedCard(board: board, onNext: onNext, onMenu: onMenu)
+                RevealedCard(board: board, onMenu: onMenu, onArchive: onArchive)
                     .padding(.horizontal, 18)
                     .padding(.bottom, 18)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -81,15 +82,9 @@ struct PlayView: View {
         }
         .onChange(of: board.tapTick) { _, _ in onSave() }
         .onChange(of: board.solveTick) { _, _ in
-            // Guard: when the board is swapped (Next puzzle), solveTick can
-            // change from a non-zero value to 0. Only react to real solves.
             guard board.isSolved else { return }
             onClearProgress()
-            if let tier = board.tier {
-                fastestYet = scoreStore.record(seconds: board.elapsedSeconds, for: tier) == .newBest
-            } else {
-                fastestYet = false
-            }
+            fastestYet = onRecordClear(board.elapsedSeconds)
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background || phase == .inactive {
@@ -107,8 +102,8 @@ struct PlayView: View {
             PillIconButton(systemName: "eye", accessibilityLabel: "Show solution", isEnabled: revealEnabled, action: { confirmingReveal = true })
             Spacer()
             VStack(spacing: 1) {
-                EyebrowLabel(board.tier?.label ?? "Lesson")
-                Text("Grove #\(board.groveNumber)")
+                EyebrowLabel(playedDateLabel)
+                Text(board.tier.map { "\($0.label) · \($0.cols)×\($0.rows)" } ?? "Lesson")
                     .font(.system(.title3, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.text)
             }
@@ -117,6 +112,13 @@ struct PlayView: View {
                 .padding(.trailing, 6)
             PillIconButton(systemName: "questionmark", accessibilityLabel: "Hint", isEnabled: hintEnabled, action: { board.nextHint() })
         }
+    }
+
+    private var playedDateLabel: String {
+        let cal = Calendar.autoupdatingCurrent
+        if cal.isDateInToday(playedDate) { return "Today" }
+        if cal.isDateInYesterday(playedDate) { return "Yesterday" }
+        return playedDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
     }
 
     private func tappedBack() {

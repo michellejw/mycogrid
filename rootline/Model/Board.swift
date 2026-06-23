@@ -124,6 +124,16 @@ final class Board {
         hintsUsed += 1
     }
 
+    /// Boot the board as a previously-cleared puzzle: solution drawn, win
+    /// card visible, timer frozen at the player's saved best. `solveTick`
+    /// stays at 0 so no re-record fires.
+    func openAsCleared(bestSeconds: Int) {
+        activeEdges = model.solution
+        xEdges = []
+        isSolved = true
+        elapsedSeconds = bestSeconds
+    }
+
     /// Reveal the full solution view-only: fills in every correct edge but
     /// does not set `isSolved` or fire `solveTick`, so no win card appears and
     /// no stats are recorded.

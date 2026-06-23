@@ -5,8 +5,8 @@ import ShroomKit
 /// checkmark, no celebration, no time — since this isn't a clear.
 struct RevealedCard: View {
     let board: Board
-    let onNext: () -> Void
     let onMenu: () -> Void
+    let onArchive: () -> Void
 
     @Environment(\.palette) private var palette
 
@@ -14,8 +14,8 @@ struct RevealedCard: View {
         ResultCard(
             title: "Solution shown",
             subtitle: subtitle,
-            primaryLabel: "Next puzzle", onPrimary: onNext,
-            secondaryLabel: "Menu", onSecondary: onMenu
+            primaryLabel: "Done", onPrimary: onMenu,
+            secondaryLabel: "Archive", onSecondary: onArchive
         ) {
             RoundedRectangle(cornerRadius: Radius.md, style: .continuous)
                 .fill(palette.pill)

@@ -61,7 +61,11 @@ final class AppState {
         guard let daily, let dp = daily.puzzle(for: date) else { return }
         playingDate = date
         playingPuzzleID = dp.id
-        activeBoard = Board(puzzle: dp.puzzle, tier: dp.tier, groveNumber: 0)
+        let board = Board(puzzle: dp.puzzle, tier: dp.tier, groveNumber: 0)
+        if completions.isCleared(dp), let best = completions.byID[dp.id]?.bestSeconds {
+            board.openAsCleared(bestSeconds: best)
+        }
+        activeBoard = board
         saveProgress()
         screen = .play
     }
@@ -250,10 +254,14 @@ struct RootView: View {
                 PlayView(
                     board: board,
                     settings: appState.settings,
-                    scoreStore: appState.scoreStore,
-                    onBack: { appState.openDifficulty() },
-                    onNext: { appState.nextPuzzle() },
+                    playedDate: appState.playingDate,
+                    onRecordClear: { appState.recordClear(seconds: $0) },
+                    onArchive: { appState.openArchive() },
                     onMenu: {
+                        appState.clearSavedProgress()
+                        appState.goHome()
+                    },
+                    onBack: {
                         appState.clearSavedProgress()
                         appState.goHome()
                     },
