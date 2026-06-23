@@ -1,10 +1,15 @@
 import Foundation
 
 /// One playable puzzle from the generated bundle, carrying its stable id and tier.
-struct DailyPuzzle: Hashable, Sendable {
-    let id: String
-    let tier: Tier
-    let puzzle: Puzzle
+public struct DailyPuzzle: Hashable, Sendable {
+    public let id: String
+    public let tier: Tier
+    public let puzzle: Puzzle
+    public init(id: String, tier: Tier, puzzle: Puzzle) {
+        self.id = id
+        self.tier = tier
+        self.puzzle = puzzle
+    }
 }
 
 /// Codable mirror of the generator's `puzzles.json`. `inside`/`hideClues` arrive
@@ -23,24 +28,24 @@ private struct PuzzleBundleJSON: Decodable {
     }
 }
 
-enum PuzzleBundleError: Error, Equatable { case unknownTier(String) }
+public enum PuzzleBundleError: Error, Equatable { case unknownTier(String) }
 
 /// The loaded bundle: per-tier ordered arrays of playable puzzles. Array order is
 /// the committed, append-only order the date→puzzle mapping depends on.
-struct PuzzleBundle: Sendable {
-    let version: Int
+public struct PuzzleBundle: Sendable {
+    public let version: Int
     private let byTier: [Tier: [DailyPuzzle]]
 
-    init(byTier: [Tier: [DailyPuzzle]], version: Int = 1) {
+    public init(byTier: [Tier: [DailyPuzzle]], version: Int = 1) {
         self.byTier = byTier
         self.version = version
     }
 
-    func puzzles(for tier: Tier) -> [DailyPuzzle] { byTier[tier] ?? [] }
+    public func puzzles(for tier: Tier) -> [DailyPuzzle] { byTier[tier] ?? [] }
 
     /// Decode from the generator's JSON. Throws `PuzzleBundleError.unknownTier`
     /// for an unrecognized tier key, or a `DecodingError` for malformed JSON.
-    init(data: Data) throws {
+    public init(data: Data) throws {
         let json = try JSONDecoder().decode(PuzzleBundleJSON.self, from: data)
         var out: [Tier: [DailyPuzzle]] = [:]
         for (key, entries) in json.tiers {
