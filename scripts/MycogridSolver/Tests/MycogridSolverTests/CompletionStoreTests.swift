@@ -33,6 +33,13 @@ import Foundation
         #expect(s.bestSeconds(for: .sprout) == 80)
     }
 
+    @Test func fasterReclearOfSameIdWhispers() {
+        let s = freshStore()
+        _ = s.record(id: "a", tier: .sprout, seconds: 90)            // first clear, tier best = 90
+        #expect(s.record(id: "a", tier: .sprout, seconds: 70) == true) // beat own best → whisper
+        #expect(s.bestSeconds(for: .sprout) == 70)
+    }
+
     @Test func slowerReclearDoesNotWhisperOrRegressBest() {
         let s = freshStore()
         _ = s.record(id: "a", tier: .sprout, seconds: 80)

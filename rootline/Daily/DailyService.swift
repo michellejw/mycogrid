@@ -51,6 +51,8 @@ struct DailyService: Sendable {
         let t = tier(for: date)
         let pool = bundle.puzzles(for: t)
         guard !pool.isEmpty else { return nil }
+        guard let epoch = calendar.date(from: Self.mappingEpoch),
+              calendar.startOfDay(for: date) >= calendar.startOfDay(for: epoch) else { return nil }
         let n = tierOccurrenceIndex(for: date, tier: t)
         return pool[n % pool.count]
     }

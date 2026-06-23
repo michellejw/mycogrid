@@ -88,6 +88,12 @@ import Foundation
         #expect(s.puzzle(for: Self.day(2026, 6, 22)) == nil)
     }
 
+    @Test func datesBeforeEpochHaveNoPuzzle() {
+        let s = svc()
+        // 2026-01-04 is the Sunday immediately before the Monday epoch (2026-01-05).
+        #expect(s.puzzle(for: Self.day(2026, 1, 4)) == nil)
+    }
+
     @Test func archiveFloorIsFourteenDaysBefore() {
         let floor = DailyService.archiveFloor(firstOpen: Self.day(2026, 6, 22), calendar: Self.utc)
         #expect(floor == Self.day(2026, 6, 8))
