@@ -8,10 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		D440846A2FE195B50016444C /* ShroomKit in Frameworks */ = {isa = PBXBuildFile; productRef = D44084692FE195B50016444C /* ShroomKit */; };
+		D4CFC6B82FEAB5F100EB0B86 /* puzzles.json in Resources */ = {isa = PBXBuildFile; fileRef = D4CFC6B52FEAB5F100EB0B86 /* puzzles.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D454E6262FE0FB0200048F33 /* rootline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = rootline.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D4CFC6B52FEAB5F100EB0B86 /* puzzles.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = puzzles.json; sourceTree = "<group>"; };
+		D4CFC6B62FEAB5F100EB0B86 /* puzzles.README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = puzzles.README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -50,6 +53,7 @@
 		D454E61D2FE0FB0200048F33 = {
 			isa = PBXGroup;
 			children = (
+				D4CFC6B72FEAB5F100EB0B86 /* Resources */,
 				D454E6282FE0FB0200048F33 /* rootline */,
 				D454E6272FE0FB0200048F33 /* Products */,
 			);
@@ -61,6 +65,16 @@
 				D454E6262FE0FB0200048F33 /* rootline.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D4CFC6B72FEAB5F100EB0B86 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D4CFC6B52FEAB5F100EB0B86 /* puzzles.json */,
+				D4CFC6B62FEAB5F100EB0B86 /* puzzles.README.md */,
+			);
+			name = Resources;
+			path = rootline/Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -131,6 +145,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4CFC6B82FEAB5F100EB0B86 /* puzzles.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

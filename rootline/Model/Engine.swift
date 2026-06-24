@@ -2,17 +2,17 @@ import Foundation
 
 /// A Mycogrid puzzle definition: a `cols × rows` grid plus a simply-connected
 /// region of "inside" cells. The solution loop and clues are derived from the region.
-struct Puzzle: Hashable, Codable, Sendable {
-    let cols: Int
-    let rows: Int
+public struct Puzzle: Hashable, Codable, Sendable {
+    public let cols: Int
+    public let rows: Int
     /// Cells that are inside the loop, as (col, row) pairs.
-    let inside: Set<Cell>
+    public let inside: Set<Cell>
     /// Cells whose clue digit should be hidden from the player.
-    let hideClues: Set<Cell>
+    public let hideClues: Set<Cell>
     /// Edges drawn before the player starts (used by tutorials).
-    let presetActive: Set<Edge>
+    public let presetActive: Set<Edge>
 
-    init(cols: Int, rows: Int, inside: [[Int]], hide: [[Int]] = [], presetActive: [Edge] = []) {
+    public init(cols: Int, rows: Int, inside: [[Int]], hide: [[Int]] = [], presetActive: [Edge] = []) {
         self.cols = cols
         self.rows = rows
         self.inside = Set(inside.compactMap { Cell.from(pair: $0) })
@@ -33,12 +33,12 @@ public struct Cell: Hashable, Codable, Sendable {
 }
 
 /// Static model derived from a Puzzle: the solution edges and the clue count per cell.
-struct PuzzleModel: Sendable {
-    let puzzle: Puzzle
-    let solution: Set<Edge>
-    let clues: [Cell: Int]
+public struct PuzzleModel: Sendable {
+    public let puzzle: Puzzle
+    public let solution: Set<Edge>
+    public let clues: [Cell: Int]
 
-    init(_ puzzle: Puzzle) {
+    public init(_ puzzle: Puzzle) {
         self.puzzle = puzzle
 
         let cols = puzzle.cols

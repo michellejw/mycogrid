@@ -4,10 +4,13 @@ import ShroomKit
 struct PlayView: View {
     @Bindable var board: Board
     let settings: Settings
-    @Bindable var scoreStore: ScoreStore
-    let onBack: () -> Void
-    let onNext: () -> Void
+    let playedDate: Date
+    let isReview: Bool
+    let onRecordClear: (Int) -> Bool
+    let onArchive: () -> Void
+    let onReplay: () -> Void
     let onMenu: () -> Void
+    let onBack: () -> Void
     let onSave: () -> Void
     let onClearProgress: () -> Void
 
@@ -25,7 +28,7 @@ struct PlayView: View {
             statsRow
                 .padding(.top, 14)
                 .padding(.bottom, 10)
-            BoardView(board: board, look: settings.look)
+            BoardView(board: board)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 8)
             if !board.isSolved && !board.revealed {
@@ -42,12 +45,12 @@ struct PlayView: View {
         .background(palette.appBg.ignoresSafeArea())
         .overlay(alignment: .bottom) {
             if board.isSolved {
-                WinCard(board: board, fastestYet: fastestYet, onNext: onNext, onMenu: onMenu)
+                WinCard(board: board, fastestYet: fastestYet, isReview: isReview, onMenu: onMenu, onArchive: onArchive, onReplay: onReplay)
                     .padding(.horizontal, 18)
                     .padding(.bottom, 18)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             } else if board.revealed {
-                RevealedCard(board: board, onNext: onNext, onMenu: onMenu)
+                RevealedCard(board: board, onMenu: onMenu, onArchive: onArchive)
                     .padding(.horizontal, 18)
                     .padding(.bottom, 18)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -81,15 +84,9 @@ struct PlayView: View {
         }
         .onChange(of: board.tapTick) { _, _ in onSave() }
         .onChange(of: board.solveTick) { _, _ in
-            // Guard: when the board is swapped (Next puzzle), solveTick can
-            // change from a non-zero value to 0. Only react to real solves.
             guard board.isSolved else { return }
             onClearProgress()
-            if let tier = board.tier {
-                fastestYet = scoreStore.record(seconds: board.elapsedSeconds, for: tier) == .newBest
-            } else {
-                fastestYet = false
-            }
+            fastestYet = onRecordClear(board.elapsedSeconds)
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background || phase == .inactive {
@@ -107,8 +104,8 @@ struct PlayView: View {
             PillIconButton(systemName: "eye", accessibilityLabel: "Show solution", isEnabled: revealEnabled, action: { confirmingReveal = true })
             Spacer()
             VStack(spacing: 1) {
-                EyebrowLabel(board.tier?.label ?? "Lesson")
-                Text("Grove #\(board.groveNumber)")
+                EyebrowLabel(playedDateLabel)
+                Text(board.tier.map { "\($0.label) · \($0.cols)×\($0.rows)" } ?? "Lesson")
                     .font(.system(.title3, design: .rounded).weight(.semibold))
                     .foregroundStyle(palette.text)
             }
@@ -117,6 +114,13 @@ struct PlayView: View {
                 .padding(.trailing, 6)
             PillIconButton(systemName: "questionmark", accessibilityLabel: "Hint", isEnabled: hintEnabled, action: { board.nextHint() })
         }
+    }
+
+    private var playedDateLabel: String {
+        let cal = Calendar.autoupdatingCurrent
+        if cal.isDateInToday(playedDate) { return "Today" }
+        if cal.isDateInYesterday(playedDate) { return "Yesterday" }
+        return playedDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
     }
 
     private func tappedBack() {
@@ -144,9 +148,6 @@ struct PlayView: View {
     private var statsRow: some View {
         HStack(spacing: 10) {
             Spacer()
-            if settings.showTimer {
-                StatPill(board.elapsedSeconds.asTimerString, systemName: "clock")
-            }
             if board.allowHints && board.hintsUsed > 0 {
                 hintsPill
             }

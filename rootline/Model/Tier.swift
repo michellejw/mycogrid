@@ -1,14 +1,14 @@
 import Foundation
 
-enum Tier: String, CaseIterable, Identifiable, Codable, Sendable {
+public enum Tier: String, CaseIterable, Identifiable, Codable, Sendable {
     case sprout
     case mycelium
     case ancient
     case oldGrowth
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
-    var label: String {
+    public var label: String {
         switch self {
         case .sprout:     return "Sprout"
         case .mycelium:   return "Mycelium"
@@ -17,7 +17,7 @@ enum Tier: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
-    var cols: Int {
+    public var cols: Int {
         switch self {
         case .sprout:    return 4
         case .mycelium:  return 5
@@ -26,7 +26,7 @@ enum Tier: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
-    var rows: Int {
+    public var rows: Int {
         switch self {
         case .sprout:    return 6
         case .mycelium:  return 7
@@ -35,16 +35,5 @@ enum Tier: String, CaseIterable, Identifiable, Codable, Sendable {
         }
     }
 
-    var meta: String {
-        switch self {
-        case .sprout:    return "4 × 6 · most clues shown"
-        case .mycelium:  return "5 × 7 · medium clues"
-        case .ancient:   return "6 × 9 · sparse clues"
-        case .oldGrowth: return "7 × 10 · minimal clues"
-        }
-    }
-
-    var shortMeta: String { "\(cols)×\(rows)" }
-
-    static let `default`: Tier = .mycelium
+    public var shortMeta: String { "\(cols)×\(rows)" }
 }
