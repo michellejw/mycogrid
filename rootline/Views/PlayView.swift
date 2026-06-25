@@ -20,6 +20,7 @@ struct PlayView: View {
     @State private var fastestYet: Bool = false
     @State private var confirmingReveal: Bool = false
     @State private var confirmingLeave: Bool = false
+    @State private var confirmingClear: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,8 +33,10 @@ struct PlayView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 8)
             if !board.isSolved && !board.revealed {
+                actionRow
+                    .padding(.top, 10)
                 modeToggle
-                    .padding(.top, 14)
+                    .padding(.top, 10)
                     .padding(.bottom, 8)
                     .transition(.opacity)
             } else {
@@ -72,6 +75,12 @@ struct PlayView: View {
             Button("Leave", role: .destructive) { onBack() }
         } message: {
             Text("Your progress on this puzzle will be lost.")
+        }
+        .alert("Clear the board?", isPresented: $confirmingClear) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear", role: .destructive) { board.clearAll() }
+        } message: {
+            Text("Removes every thread and X. You can still undo it after.")
         }
         .sensoryFeedback(.impact(weight: .light, intensity: 0.6), trigger: board.tapTick)
         .sensoryFeedback(.success, trigger: board.solveTick)
@@ -177,6 +186,39 @@ struct PlayView: View {
     }
 
     // MARK: Mode toggle
+
+    // MARK: Undo / Clear
+
+    private var actionRow: some View {
+        HStack(spacing: 22) {
+            actionButton(systemName: "arrow.uturn.backward", title: "Undo",
+                         isEnabled: board.canUndo) {
+                board.undo()
+            }
+            actionButton(systemName: "arrow.counterclockwise", title: "Clear",
+                         isEnabled: board.canClear) {
+                confirmingClear = true
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func actionButton(systemName: String, title: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: systemName)
+                    .font(.system(.footnote, design: .rounded).weight(.semibold))
+                Text(title)
+                    .font(.system(.subheadline, design: .rounded).weight(.medium))
+            }
+            .foregroundStyle(isEnabled ? palette.sub : palette.sub.opacity(0.35))
+            .padding(.horizontal, 14)
+            .frame(minHeight: 36)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+    }
 
     private var modeToggle: some View {
         SegmentedToggle(selection: $board.mode, segments: [

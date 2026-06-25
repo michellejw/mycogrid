@@ -27,6 +27,12 @@ final class Board {
     var solveTick: Int = 0
     var tapTick: Int = 0
 
+    /// Pre-mutation snapshots of (activeEdges, xEdges) for the undo stack.
+    /// Each tap, hint, and clear pushes one; undo pops one.
+    private var history: [(active: Set<Edge>, x: Set<Edge>)] = []
+    var canUndo: Bool { !history.isEmpty && !isSolved && !revealed }
+    var canClear: Bool { hasPlayerMoves && !isSolved && !revealed }
+
     init(puzzle: Puzzle, tier: Tier?, allowHints: Bool = true) {
         self.model = PuzzleModel(puzzle)
         self.tier = tier
@@ -82,6 +88,7 @@ final class Board {
 
     func toggle(_ edge: Edge) {
         guard !isSolved, !revealed else { return }
+        history.append((active: activeEdges, x: xEdges))
         tapTick &+= 1
         switch mode {
         case .draw:
@@ -111,8 +118,25 @@ final class Board {
     /// Unlimited — `hintsUsed` is tracked for the player's awareness, not gated.
     func nextHint() {
         guard allowHints, !isSolved, !revealed else { return }
+        history.append((active: activeEdges, x: xEdges))
         placeOneMissingEdge()
         hintsUsed += 1
+    }
+
+    /// Pop one snapshot off the history stack and restore it.
+    func undo() {
+        guard canUndo, let last = history.popLast() else { return }
+        activeEdges = last.active
+        xEdges = last.x
+    }
+
+    /// Wipe all player edges + Xs back to the puzzle's preset state. Itself
+    /// pushes a snapshot so a player can undo a clear if they did it by accident.
+    func clearAll() {
+        guard canClear else { return }
+        history.append((active: activeEdges, x: xEdges))
+        activeEdges = puzzle.presetActive
+        xEdges = []
     }
 
     /// Boot the board as a previously-cleared puzzle: solution drawn, win
