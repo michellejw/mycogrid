@@ -36,8 +36,13 @@ final class Settings {
         return floor
     }
 
-    /// Quick light/dark flip from the in-game header.
+    /// Cycle System → Light → Dark → System. The icon on the in-game button
+    /// reflects the current mode, so each tap shows you what changes next.
     func cycleThemeMode() {
-        themeMode = (themeMode == .twilight) ? .forest : .twilight
+        switch themeMode {
+        case .system:   themeMode = .forest
+        case .forest:   themeMode = .twilight
+        case .twilight: themeMode = .system
+        }
     }
 }
