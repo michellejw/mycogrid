@@ -181,6 +181,10 @@ final class Board {
             // Remove a wrongly-active edge on the cell.
             for e in cellEdges where !model.solution.contains(e) && activeEdges.contains(e) {
                 activeEdges.remove(e)
+                if model.isSolved(active: activeEdges) {
+                    isSolved = true
+                    solveTick &+= 1
+                }
                 return
             }
         }
@@ -197,6 +201,10 @@ final class Board {
         // Or remove the first wrong edge.
         for e in activeEdges where !model.solution.contains(e) {
             activeEdges.remove(e)
+            if model.isSolved(active: activeEdges) {
+                isSolved = true
+                solveTick &+= 1
+            }
             return
         }
         _ = p
